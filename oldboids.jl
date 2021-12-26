@@ -119,8 +119,8 @@ function flock()
     separation_force = []
 
     # initialize empty arrays for alignment rule
-    neighbor_vx = []
-    neighbor_vy = []
+    # neighbor_vx = []
+    # neighbor_vy = []
     neighbor_v  =[]
     # initialize empty arrays for cohesion rule
     neighbor_x = []
@@ -141,8 +141,9 @@ function flock()
                 # push!(separation_force_y, sfy)
                 push!(separation_force, [boid[i].x - boid[j].x,boid[i].y - boid[j].y])
                 # populate arrays for alignment rule
-                push!(neighbor_vx, vx[j])
-                push!(neighbor_vy, vy[j])
+                # push!(neighbor_vx, vx[j])
+                # push!(neighbor_vy, vy[j])
+                push!(neighbor_v, [vx[j],vy[j]])
                 # populate arrays for cohesion rule
                 push!(neighbor_x, boid[j].x)
                 push!(neighbor_y, boid[j].y)
@@ -168,12 +169,10 @@ function flock()
 
 
                     # 2. alignment rule ########################################
-                    avg_vx = Int(round(
-                        sum(neighbor_vx) / total
-                    ))
-                    avg_vy = Int(round(
-                        sum(neighbor_vy) / total
-                    ))
+                    avg_v = sum(neighbor_v)/total
+                    avg_vx = Int(round(avg_v[1]))
+                    avg_vy = Int(round(avg_v[2]))
+
 
                     steering_force_x2 = Int(round(
                         (avg_vx - vx[i]) / alignment_dial
