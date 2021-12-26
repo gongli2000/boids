@@ -47,7 +47,7 @@ range = [collect(-4:-2); collect(2:4)]
 
 vx = rand(range, n)
 vy = rand(range, n)
-
+v = [[vel[1],vel[2]] for vel in zip(vx,vy)]
 # initialize acceleration vectors
 
 ax = zeros(n)
@@ -143,7 +143,8 @@ function flock()
                 # populate arrays for alignment rule
                 # push!(neighbor_vx, vx[j])
                 # push!(neighbor_vy, vy[j])
-                push!(neighbor_v, [vx[j],vy[j]])
+                #push!(neighbor_v, [vx[j],vy[j]])
+                push!(neighbor_v,v[j])
                 # populate arrays for cohesion rule
                 push!(neighbor_x, boid[j].x)
                 push!(neighbor_y, boid[j].y)
@@ -223,7 +224,9 @@ function update(g::Game)
         # update velocities
         vx[i] += ax[i]
         vy[i] += ay[i]
-
+        v = [[vel[1],vel[2]] for vel in zip(vx,vy)]
+        # v[i] += [ax[i],ay[i]]
+        # vx[i] ,vy[i] = v[i][1],v[i][2]
         if vx[i] == 0
             vx[i] = min_speed * rand((-1, 1))
         end
