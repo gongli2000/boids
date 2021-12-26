@@ -3,6 +3,7 @@ using GameZero,Colors
 mutable struct Boid
     pos::Vector{Int64}
     v::Vector{Int64}
+    rxy::Vector{Int64}
     color::RGB
 end
 
@@ -23,10 +24,10 @@ cohesion_dial = 100       # 100
 
 xrange = [collect(-4:-2); collect(2:4)]
 colors = [colorant"red", colorant"green", colorant"blue"]
-rxy = [[0.0 ,0.0] for i in 1:n] # create steering force vectors for rules
 
 boid = [Boid([rand(20:5:(WIDTH - 20)),rand(20:5:(HEIGHT - 20))]
                 ,[rand(xrange),rand(xrange)]
+                ,[0,0]
                 ,rand(colors))
          for i in 1:n]
 
@@ -90,32 +91,31 @@ function flock()
     total = 0
     neighbor_v  =[]
     neighbor_xy = []
-    for i in 1:n
-
-        for j in 1:n
+    for boid_i in boid
+        for boid_j in boid
             # search for boids within perception_radius
-            d = distance(boid[i], boid[j])
-            if boid[i] !== boid[j] && d < perception_radius
+            d = distance(boid_i, boid_j)
+            if boid_i !== boid_j && d < perception_radius
                 total += 1
-                push!(separation_force,boid[i].pos-boid[j].pos) #separation rule
-                push!(neighbor_v,boid[j].v) # alignment rule
-                push!(neighbor_xy,boid[j].pos) # cohesion rule
+                push!(separation_force,boid_i.pos-boid_j.pos) #separation rule
+                push!(neighbor_v,boid_j.v) # alignment rule
+                push!(neighbor_xy,boid_j.pos) # cohesion rule
 
                 # conditional for boids within perception_radius
                 # 1. separation rule #######################################
                 avg_xy = sum(separation_force)/total
-                sf1 = (avg_xy-boid[i].v)/separation_dial
-                rxy[i] = clip_steering_force(sf1[1],sf1[2])
+                sf1 = (avg_xy-boid_i.v)/separation_dial
+                boid_i.rxy = clip_steering_force(sf1[1],sf1[2])
 
                 # 2. alignment rule ########################################rung
                 avg_v = sum(neighbor_v)/total
-                sf2 = (avg_v -boid[i].v)/alignment_dial
-                rxy[i] += clip_steering_force(sf2[1],sf2[2])
+                sf2 = (avg_v - boid_i.v)/alignment_dial
+                boid_i.rxy  += clip_steering_force(sf2[1],sf2[2])
 
                 # 3. cohesion rule #########################################
                 avg_xy = sum(neighbor_xy)/total
-                sf3 = (avg_xy - boid[i].pos - boid[i].v)/cohesion_dial
-                rxy[i] += clip_steering_force(sf3[1],sf3[2])
+                sf3 = (avg_xy - boid_i.pos - boid_i.v)/cohesion_dial
+                boid_i.rxy  += clip_steering_force(sf3[1],sf3[2])
             end
         end
     end
@@ -133,15 +133,14 @@ end
 # update position of actors (boids)
 
 function update(g::Game)
-    global rxy
     flock()
     for i in 1:n
         boid[i].pos = clip_pos(boid[i].pos)
-        boid[i].v += rxy[i]
+        boid[i].v += boid[i].rxy
+        boid[i].rxy =[0,0]
         boid[i].v= [clip_speed(boid[i].v[1]),clip_speed(boid[i].v[2])]
         boid[i].pos += boid[i].v
     end
-    rxy = [[0.0,0.0] for i in 1:n]
 end
 
 #tstopen
