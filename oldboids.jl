@@ -1,8 +1,10 @@
 # initialize screen
-
-WIDTH = 1280
-HEIGHT = 720
-BACKGROUND = colorant"antiquewhite"
+using GameZero,Colors
+mutable struct Boid
+    pos::Vector{Int64}
+    v::Vector{Int64}
+    color::RGB
+end
 
 # set number of actors (boids)
 
@@ -10,44 +12,51 @@ n = 200    # 200
 
 # select random starting points
 
-x = rand(20:5:(WIDTH - 20), n)
-y = rand(20:5:(HEIGHT - 20), n)
+# x = rand(20:5:(WIDTH - 20), n)
+# y = rand(20:5:(HEIGHT - 20), n)
 
 # define initial state of actors
 
 r = 2    # 2
 
-boid = []
 
-for i in 1:n
-    push!(boid, Circle(x[i], y[i], r))
-end
+# vx = rand(xrange, n)
+# vy = rand(xrange, n)
+WIDTH = 1280
+HEIGHT = 720
+BACKGROUND = colorant"antiquewhite"
+xrange = [collect(-4:-2); collect(2:4)]
+colors = [colorant"red", colorant"green", colorant"blue"]
+boid = [Boid([rand(20:5:(WIDTH - 20)),rand(20:5:(HEIGHT - 20))]
+                ,[rand(xrange),rand(xrange)]
+                ,rand(colors))
+         for i in 1:n]
+
+# for i in 1:n
+#     push!(boid, Circle(x[i], y[i], r))
+# end
 
 # select random colors for actors
 
-colors = [colorant"red", colorant"green", colorant"blue"]
 
-boid_color = []
 
-for i in 1:n
-    push!(boid_color, rand(colors))
-end
+# boid_color = []
+#
+# for i in 1:n
+#     push!(boid_color, rand(colors))
+# end
 
 # draw actors
 
 function draw(g::Game)
     for i in 1:n
-        draw(boid[i], boid_color[i], fill = true)
+        draw(Circle(boid[i].pos[1],boid[i].pos[2],r), boid[i].color, fill = true)
     end
 end
 
 # select random initial velocities
 
-range = [collect(-4:-2); collect(2:4)]
 
-vx = rand(range, n)
-vy = rand(range, n)
-v = [[vel[1],vel[2]] for vel in zip(vx,vy)]
 
 
 # create steering force vectors for rules
@@ -62,25 +71,26 @@ rxy = [[0.0 ,0.0] for i in 1:n]
 
 # define border function
 
-function border(i)
-    if boid[i].x > WIDTH
-        boid[i].x = 0
-    elseif boid[i].x < 0
-        boid[i].x = WIDTH
-    elseif boid[i].y > HEIGHT
-        boid[i].y = 0
-    elseif boid[i].y < 0
-        boid[i].y = HEIGHT
+function clip_pos(pos::Vector)
+    xpos = pos[1]
+    ypos = pos[2]
+    if xpos> WIDTH
+        xpos = 0
+    elseif xpos < 0
+        xpos = WIDTH
+    elseif ypos > HEIGHT
+        ypos = 0
+    elseif ypos < 0
+        ypos = HEIGHT
     end
+    return [xpos,ypos]
 end
 
 # create distance method
 
-function distance(boid1::Circle, boid2::Circle)
-    d = Int(round(sqrt(
-        (boid1.x - boid2.x)^2 + (boid1.y - boid2.y)^2
-    )))
-    return d
+function distance(boid1::Boid, boid2::Boid)
+    dp =boid1.pos - boid2.pos
+    return Int(round(sqrt(sum(dp .* dp))))
 end
 
 # set variables for boids
@@ -112,51 +122,39 @@ function clip_steering_force(steering_force_x,steering_force_y)
 end
 function flock()
     # initialize empty array for separation rule
-    # separation_force_x = []
-    # separation_force_y = []
     separation_force = []
 
     # initialize empty arrays for alignment rule
-    # neighbor_vx = []
-    # neighbor_vy = []
-    neighbor_v  =[]
-    # initialize empty arrays for cohesion rule
-    neighbor_x = []
-    neighbor_y = []
-    neighbor_xy = []
-    # initialize counter
-    total = 0
 
+
+    total = 0
+    neighbor_v  =[]
+    neighbor_xy = []
     for i in 1:n
+
         for j in 1:n
             # search for boids within perception_radius
             d = distance(boid[i], boid[j])
             if boid[i] !== boid[j] && d < perception_radius
-                # populate arrays for separation rule
-                push!(separation_force, [boid[i].x - boid[j].x,boid[i].y - boid[j].y])
-
-                # populate arrays for alignment rule
-                push!(neighbor_v,v[j])
-
-                # populate arrays for cohesion rule
-                push!(neighbor_xy,[boid[j].x, boid[j].y])
-
                 total += 1
+                push!(separation_force,boid[i].pos-boid[j].pos) #separation rule
+                push!(neighbor_v,boid[j].v) # alignment rule
+                push!(neighbor_xy,boid[j].pos) # cohesion rule
 
                 # conditional for boids within perception_radius
                 # 1. separation rule #######################################
                 avg_xy = sum(separation_force)/total
-                sf1 = (avg_xy-v[i])/separation_dial
+                sf1 = (avg_xy-boid[i].v)/separation_dial
                 rxy[i] = clip_steering_force(sf1[1],sf1[2])
 
                 # 2. alignment rule ########################################rung
                 avg_v = sum(neighbor_v)/total
-                sf2 = (avg_v -v[i])/alignment_dial
+                sf2 = (avg_v -boid[i].v)/alignment_dial
                 rxy[i] += clip_steering_force(sf2[1],sf2[2])
 
                 # 3. cohesion rule #########################################
                 avg_xy = sum(neighbor_xy)/total
-                sf3 = (avg_xy - [boid[i].x,boid[i].y] - v[i])/cohesion_dial
+                sf3 = (avg_xy - boid[i].pos - boid[i].v)/cohesion_dial
                 rxy[i] += clip_steering_force(sf3[1],sf3[2])
             end
         end
@@ -178,11 +176,10 @@ function update(g::Game)
     global rxy
     flock()
     for i in 1:n
-        border(i)
-        v[i] += rxy[i]
-        v[i][1],v[i][2]= clip_speed(v[i][1]),clip_speed(v[i][2])
-        boid[i].x += v[i][1]
-        boid[i].y += v[i][2]
+        boid[i].pos = clip_pos(boid[i].pos)
+        boid[i].v += rxy[i]
+        boid[i].v= [clip_speed(boid[i].v[1]),clip_speed(boid[i].v[2])]
+        boid[i].pos += boid[i].v
     end
     rxy = [[0.0,0.0] for i in 1:n]
 end
