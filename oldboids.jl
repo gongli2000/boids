@@ -97,7 +97,7 @@ cohesion_dial = 100       # 100
 
 # define 1 function for all 3 rules
 function clip_steering_force(steering_force_x,steering_force_y)
-    sfx,sfy = steering_force_x, steering_force_y
+    sfx,sfy = Int(round(steering_force_x)), Int(round(steering_force_y))
     if abs(sfx) < 1
         sfx = Int(round(min_speed * sign(sfx)))
     end
@@ -157,17 +157,8 @@ function flock()
 
                     # 1. separation rule #######################################
                     avg_xy = sum(separation_force)/total
-                    avg_x1 = Int(round(avg_xy[1]))
-                    avg_y1 = Int(round(avg_xy[2]))
-
-
-                    steering_force_x1 = Int(round(
-                        (avg_x1 - vx[i]) / separation_dial
-                    ))
-                    steering_force_y1 = Int(round(
-                        (avg_y1 - vy[i]) / separation_dial
-                    ))
-                    rxy[i] = clip_steering_force(steering_force_x1,steering_force_y1)
+                    sf1 = (avg_xy-v[i])/separation_dial
+                    rxy[i] = clip_steering_force(sf1[1],sf1[2])
 
 
                     # 2. alignment rule ########################################rung
