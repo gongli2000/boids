@@ -114,14 +114,18 @@ function clip_steering_force(steering_force_x,steering_force_y)
 end
 function flock()
     # initialize empty array for separation rule
-    separation_force_x = []
-    separation_force_y = []
+    # separation_force_x = []
+    # separation_force_y = []
+    separation_force = []
+
     # initialize empty arrays for alignment rule
     neighbor_vx = []
     neighbor_vy = []
+    neighbor_v  =[]
     # initialize empty arrays for cohesion rule
     neighbor_x = []
     neighbor_y = []
+    neighbor_xy = []
     # initialize counter
     total = 0
 
@@ -131,20 +135,11 @@ function flock()
             d = distance(boid[i], boid[j])
             if boid[i] !== boid[j] && d < perception_radius
                 # populate arrays for separation rule
-                # if boid[i].x !== boid[j].x
-                #     s_f_x = boid[i].x - boid[j].x
-                # else
-                #     s_f_x = 0
-                # end
-                # if boid[i].y !== boid[j].y
-                #     s_f_y = boid[i].y - boid[j].y
-                # else
-                #     s_f_y = 0
-                # end
-                s_f_x = boid[i].x - boid[j].x
-                s_f_y = boid[i].y - boid[j].y
-                push!(separation_force_x, s_f_x)
-                push!(separation_force_y, s_f_y)
+                # sfx = boid[i].x - boid[j].x
+                # sfy = boid[i].y - boid[j].y
+                # push!(separation_force_x, sfx)
+                # push!(separation_force_y, sfy)
+                push!(separation_force, [boid[i].x - boid[j].x,boid[i].y - boid[j].y])
                 # populate arrays for alignment rule
                 push!(neighbor_vx, vx[j])
                 push!(neighbor_vy, vy[j])
@@ -158,12 +153,10 @@ function flock()
                 if total > 0
 
                     # 1. separation rule #######################################
-                    avg_x1 = Int(round(
-                        sum(separation_force_x) / total
-                    ))
-                    avg_y1 = Int(round(
-                        sum(separation_force_y) / total
-                    ))
+                    avg_xy = sum(separation_force)/total
+                    avg_x1 = Int(round(avg_xy[1]))
+                    avg_y1 = Int(round(avg_xy[2]))
+
 
                     steering_force_x1 = Int(round(
                         (avg_x1 - vx[i]) / separation_dial
