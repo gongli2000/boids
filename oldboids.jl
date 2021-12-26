@@ -147,54 +147,29 @@ function flock()
                 #push!(neighbor_v, [vx[j],vy[j]])
                 push!(neighbor_v,v[j])
                 # populate arrays for cohesion rule
-                push!(neighbor_x, boid[j].x)
-                push!(neighbor_y, boid[j].y)
+                # push!(neighbor_x, boid[j].x)
+                # push!(neighbor_y, boid[j].y)
+                push!(neighbor_xy,[boid[j].x, boid[j].y])
                 # increment counter
                 total += 1
 
                 # conditional for boids within perception_radius
-                if total > 0
+                # 1. separation rule #######################################
+                avg_xy = sum(separation_force)/total
+                sf1 = (avg_xy-v[i])/separation_dial
+                rxy[i] = clip_steering_force(sf1[1],sf1[2])
 
-                    # 1. separation rule #######################################
-                    avg_xy = sum(separation_force)/total
-                    sf1 = (avg_xy-v[i])/separation_dial
-                    rxy[i] = clip_steering_force(sf1[1],sf1[2])
+                # 2. alignment rule ########################################rung
+                avg_v = sum(neighbor_v)/total
+                sf2 = (avg_v -v[i])/alignment_dial
+                rxy[i] +=clip_steering_force(sf2[1],sf2[2])
 
-
-                    # 2. alignment rule ########################################rung
-                    avg_v = sum(neighbor_v)/total
-                    avg_vx = Int(round(avg_v[1]))
-                    avg_vy = Int(round(avg_v[2]))
-
-
-                    steering_force_x2 = Int(round(
-                        (avg_vx - vx[i]) / alignment_dial
-                    ))
-                    steering_force_y2 = Int(round(
-                        (avg_vy - vy[i]) / alignment_dial
-                    ))
-
-                    rxy[i] +=clip_steering_force(steering_force_x2,steering_force_y2)
+                # 3. cohesion rule #########################################
+                avg_xy = sum(neighbor_xy)/total
+                sf3 = (avg_xy - [boid[i].x,boid[i].y] - v[i])/cohesion_dial
+                rxy[i] += clip_steering_force(sf3[1],sf3[2])
 
 
-                    # 3. cohesion rule #########################################
-                    avg_x3 = Int(round(
-                        sum(neighbor_x) / total
-                    ))
-                    avg_y3 = Int(round(
-                        sum(neighbor_y) / total
-                    ))
-
-                    steering_force_x3 = Int(round(
-                        (avg_x3 - boid[i].x - vx[i]) / cohesion_dial
-                    ))
-                    steering_force_y3 = Int(round(
-                        (avg_y3 - boid[i].y - vy[i]) / cohesion_dial
-                    ))
-
-                    rxy[i] += clip_steering_force(steering_force_x3,steering_force_y3)
-
-                end
             end
         end
     end
