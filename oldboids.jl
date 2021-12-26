@@ -55,12 +55,13 @@ ay = zeros(n)
 
 # create steering force vectors for rules
 
-rx1 = zeros(n)
-ry1 = zeros(n)
-rx2 = zeros(n)
-ry2 = zeros(n)
-rx3 = zeros(n)
-ry3 = zeros(n)
+# rx1 = zeros(n)
+# ry1 = zeros(n)
+# rx2 = zeros(n)
+# ry2 = zeros(n)
+# rx3 = zeros(n)
+# ry3 = zeros(n)
+rxy = [[0.0 ,0.0] for i in 1:n]
 
 # define border function
 
@@ -110,7 +111,7 @@ function clip_steering_force(steering_force_x,steering_force_y)
     if abs(sfy) > max_speed
         sfy = Int(round(max_speed * sign(sfy)))
     end
-    return sfx,sfy
+    return [sfx,sfy]
 end
 function flock()
     # initialize empty array for separation rule
@@ -166,10 +167,10 @@ function flock()
                     steering_force_y1 = Int(round(
                         (avg_y1 - vy[i]) / separation_dial
                     ))
-                    rx1[i],ry1[i] = clip_steering_force(steering_force_x1,steering_force_y1)
+                    rxy[i] = clip_steering_force(steering_force_x1,steering_force_y1)
 
 
-                    # 2. alignment rule ########################################
+                    # 2. alignment rule ########################################rung
                     avg_v = sum(neighbor_v)/total
                     avg_vx = Int(round(avg_v[1]))
                     avg_vy = Int(round(avg_v[2]))
@@ -182,7 +183,7 @@ function flock()
                         (avg_vy - vy[i]) / alignment_dial
                     ))
 
-                    rx2[i],ry2[i]=clip_steering_force(steering_force_x2,steering_force_y2)
+                    rxy[i] +=clip_steering_force(steering_force_x2,steering_force_y2)
 
 
                     # 3. cohesion rule #########################################
@@ -200,64 +201,37 @@ function flock()
                         (avg_y3 - boid[i].y - vy[i]) / cohesion_dial
                     ))
 
-                    rx3[i],ry3[i]=clip_steering_force(steering_force_x3,steering_force_y3)
+                    rxy[i] += clip_steering_force(steering_force_x3,steering_force_y3)
 
                 end
             end
         end
     end
 end
-
+function clip_speed(vel)
+        v_clipped = vel
+        if v_clipped == 0
+            v_clipped  = min_speed * rand((-1, 1))
+        end
+        if abs(v_clipped) > max_speed
+            v_clipped  = max_speed * sign(vel)
+        end
+        return v_clipped
+end
 # update position of actors (boids)
 
 function update(g::Game)
-    global rx1, ry1, rx2, ry2, rx3, ry3
+    global rxy
     flock()
-
     for i in 1:n
         border(i)
-
-        # calculate accelerations
-        ax[i] = rx1[i] + rx2[i] + rx3[i]
-        ay[i] = ry1[i] + ry2[i] + ry3[i]
-
-        # update velocities
-        # vx[i] += ax[i]
-        # vy[i] += ay[i]
-
+        ax[i],ay[i] = rxy[i]
         v[i] += [ax[i],ay[i]]
-
-
-        if v[i][1] == 0
-            v[i][1] = min_speed * rand((-1, 1))
-        end
-        if abs(v[i][1]) > max_speed
-            v[i][1] = max_speed * sign(v[i][1])
-        end
-
-        if v[i][2] == 0
-            v[i][2] = min_speed * rand((-1, 1))
-        end
-
-        if abs(v[i][2]) > max_speed
-            v[i][2]= max_speed * sign(v[i][2])
-        end
-
-
-        # update positions
+        v[i][1],v[i][2]= clip_speed(v[i][1]),clip_speed(v[i][2])
         boid[i].x += v[i][1]
         boid[i].y += v[i][2]
-
     end
-
-    # clear steering force vectors
-    rx1 = zeros(n)
-    ry1 = zeros(n)
-    rx2 = zeros(n)
-    ry2 = zeros(n)
-    rx3 = zeros(n)
-    ry3 = zeros(n)
-
+    rxy = [[0.0,0.0] for i in 1:n]
 end
 
 #tstopen
