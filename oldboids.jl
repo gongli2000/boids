@@ -6,71 +6,38 @@ mutable struct Boid
     color::RGB
 end
 
-# set number of actors (boids)
+
 
 n = 200    # 200
-
-# select random starting points
-
-# x = rand(20:5:(WIDTH - 20), n)
-# y = rand(20:5:(HEIGHT - 20), n)
-
-# define initial state of actors
-
 r = 2    # 2
-
-
-# vx = rand(xrange, n)
-# vy = rand(xrange, n)
 WIDTH = 1280
 HEIGHT = 720
 BACKGROUND = colorant"antiquewhite"
+
+perception_radius = 10    # 10
+min_speed = 2             # 2
+max_speed = 4             # 4
+separation_dial = 60      # 60
+alignment_dial = 8        # 8
+cohesion_dial = 100       # 100
+
 xrange = [collect(-4:-2); collect(2:4)]
 colors = [colorant"red", colorant"green", colorant"blue"]
+rxy = [[0.0 ,0.0] for i in 1:n] # create steering force vectors for rules
+
 boid = [Boid([rand(20:5:(WIDTH - 20)),rand(20:5:(HEIGHT - 20))]
                 ,[rand(xrange),rand(xrange)]
                 ,rand(colors))
          for i in 1:n]
 
-# for i in 1:n
-#     push!(boid, Circle(x[i], y[i], r))
-# end
-
-# select random colors for actors
-
-
-
-# boid_color = []
-#
-# for i in 1:n
-#     push!(boid_color, rand(colors))
-# end
-
-# draw actors
 
 function draw(g::Game)
-    for i in 1:n
-        draw(Circle(boid[i].pos[1],boid[i].pos[2],r), boid[i].color, fill = true)
+    for aboid in boid
+        draw(Circle(aboid.pos[1],aboid.pos[2],r), aboid.color, fill = true)
     end
 end
 
-# select random initial velocities
-
-
-
-
-# create steering force vectors for rules
-
-# rx1 = zeros(n)
-# ry1 = zeros(n)
-# rx2 = zeros(n)
-# ry2 = zeros(n)
-# rx3 = zeros(n)
-# ry3 = zeros(n)
-rxy = [[0.0 ,0.0] for i in 1:n]
-
 # define border function
-
 function clip_pos(pos::Vector)
     xpos = pos[1]
     ypos = pos[2]
@@ -93,14 +60,7 @@ function distance(boid1::Boid, boid2::Boid)
     return Int(round(sqrt(sum(dp .* dp))))
 end
 
-# set variables for boids
 
-perception_radius = 10    # 10
-min_speed = 2             # 2
-max_speed = 4             # 4
-separation_dial = 60      # 60
-alignment_dial = 8        # 8
-cohesion_dial = 100       # 100
 
 # define 1 function for all 3 rules
 function clip_steering_force(steering_force_x,steering_force_y)
