@@ -222,28 +222,31 @@ function update(g::Game)
         ay[i] = ry1[i] + ry2[i] + ry3[i]
 
         # update velocities
-        vx[i] += ax[i]
-        vy[i] += ay[i]
-        v = [[vel[1],vel[2]] for vel in zip(vx,vy)]
-        # v[i] += [ax[i],ay[i]]
-        # vx[i] ,vy[i] = v[i][1],v[i][2]
-        if vx[i] == 0
-            vx[i] = min_speed * rand((-1, 1))
+        # vx[i] += ax[i]
+        # vy[i] += ay[i]
+
+        v[i] += [ax[i],ay[i]]
+
+
+        if v[i][1] == 0
+            v[i][1] = min_speed * rand((-1, 1))
         end
-        if vy[i] == 0
-            vy[i] = min_speed * rand((-1, 1))
+        if abs(v[i][1]) > max_speed
+            v[i][1] = max_speed * sign(v[i][1])
         end
 
-        if abs(vx[i]) > max_speed
-            vx[i] = max_speed * sign(vx[i])
+        if v[i][2] == 0
+            v[i][2] = min_speed * rand((-1, 1))
         end
-        if abs(vy[i]) > max_speed
-            vy[i] = max_speed * sign(vy[i])
+
+        if abs(v[i][2]) > max_speed
+            v[i][2]= max_speed * sign(v[i][2])
         end
+
 
         # update positions
-        boid[i].x += vx[i]
-        boid[i].y += vy[i]
+        boid[i].x += v[i][1]
+        boid[i].y += v[i][2]
 
     end
 
