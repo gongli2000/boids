@@ -190,28 +190,8 @@ function flock()
                         (avg_vy - vy[i]) / alignment_dial
                     ))
 
-                    if abs(steering_force_x2) < 1
-                        steering_force_x2 = Int(round(
-                            min_speed * sign(steering_force_x2)
-                        ))
-                    end
-                    if abs(steering_force_y2) < 1
-                        steering_force_y2 = Int(round(
-                            min_speed * sign(steering_force_y2)
-                        ))
-                    end
-
-                    if abs(steering_force_x2) > max_speed
-                        steering_force_x2 = Int(round(
-                            max_speed * sign(steering_force_x2)
-                        ))
-                    end
-                    if abs(steering_force_y2) > max_speed
-                        steering_force_y2 = Int(round(
-                            max_speed * sign(steering_force_y2)
-                        ))
-                    end
-
+                    steering_force_x2 ,steering_force_y2 =
+                       clip_steering_force(steering_force_x2,steering_force_y2)
                     rx2[i] = steering_force_x2
                     ry2[i] = steering_force_y2
 
@@ -230,27 +210,8 @@ function flock()
                         (avg_y3 - boid[i].y - vy[i]) / cohesion_dial
                     ))
 
-                    if abs(steering_force_x3) < 1
-                        steering_force_x3 = Int(round(
-                            min_speed * sign(steering_force_x3)
-                        ))
-                    end
-                    if abs(steering_force_y3) < 1
-                        steering_force_y3 = Int(round(
-                            min_speed * sign(steering_force_y3)
-                        ))
-                    end
-
-                    if abs(steering_force_x3) > max_speed
-                        steering_force_x3 = Int(round(
-                            max_speed * sign(steering_force_x3)
-                        ))
-                    end
-                    if abs(steering_force_y3) > max_speed
-                        steering_force_y3 = Int(round(
-                            max_speed * sign(steering_force_y3)
-                        ))
-                    end
+                    steering_force_x3 ,steering_force_y3 =
+                       clip_steering_force(steering_force_x3,steering_force_y3)
 
                     rx3[i] = steering_force_x3
                     ry3[i] = steering_force_y3
