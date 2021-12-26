@@ -95,7 +95,23 @@ alignment_dial = 8        # 8
 cohesion_dial = 100       # 100
 
 # define 1 function for all 3 rules
+function clip_steering_force(steering_force_x,steering_force_y)
+    sfx,sfy = steering_force_x, steering_force_y
+    if abs(sfx) < 1
+        sfx = Int(round(min_speed * sign(sfx)))
+    end
+    if abs(sfx) > max_speed
+        sfx = Int(round(max_speed * sign(sfx)))
+    end
 
+    if abs(sfy) < 1
+        sfy = Int(round(min_speed * sign(sfy)))
+    end
+    if abs(sfy) > max_speed
+        sfy = Int(round(max_speed * sign(sfy)))
+    end
+    return sfx,sfy
+end
 function flock()
     # initialize empty array for separation rule
     separation_force_x = []
@@ -154,28 +170,8 @@ function flock()
                         (avg_y1 - vy[i]) / separation_dial
                     ))
 
-                    if abs(steering_force_x1) < 1
-                        steering_force_x1 = Int(round(
-                            min_speed * sign(steering_force_x1)
-                        ))
-                    end
-                    if abs(steering_force_y1) < 1
-                        steering_force_y1 = Int(round(
-                            min_speed * sign(steering_force_y1)
-                        ))
-                    end
-
-                    if abs(steering_force_x1) > max_speed
-                        steering_force_x1 = Int(round(
-                            max_speed * sign(steering_force_x1)
-                        ))
-                    end
-                    if abs(steering_force_y1) > max_speed
-                        steering_force_y1 = Int(round(
-                            max_speed * sign(steering_force_y1)
-                        ))
-                    end
-
+                    steering_force_x1, steering_force_y1 =
+                      clip_steering_force(steering_force_x1,steering_force_y1)
                     rx1[i] = steering_force_x1
                     ry1[i] = steering_force_y1
 
@@ -312,4 +308,4 @@ function update(g::Game)
 
 end
 
-#tst
+#tstopen
