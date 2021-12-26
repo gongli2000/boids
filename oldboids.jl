@@ -48,10 +48,7 @@ range = [collect(-4:-2); collect(2:4)]
 vx = rand(range, n)
 vy = rand(range, n)
 v = [[vel[1],vel[2]] for vel in zip(vx,vy)]
-# initialize acceleration vectors
 
-ax = zeros(n)
-ay = zeros(n)
 
 # create steering force vectors for rules
 
@@ -136,21 +133,14 @@ function flock()
             d = distance(boid[i], boid[j])
             if boid[i] !== boid[j] && d < perception_radius
                 # populate arrays for separation rule
-                # sfx = boid[i].x - boid[j].x
-                # sfy = boid[i].y - boid[j].y
-                # push!(separation_force_x, sfx)
-                # push!(separation_force_y, sfy)
                 push!(separation_force, [boid[i].x - boid[j].x,boid[i].y - boid[j].y])
+
                 # populate arrays for alignment rule
-                # push!(neighbor_vx, vx[j])
-                # push!(neighbor_vy, vy[j])
-                #push!(neighbor_v, [vx[j],vy[j]])
                 push!(neighbor_v,v[j])
+
                 # populate arrays for cohesion rule
-                # push!(neighbor_x, boid[j].x)
-                # push!(neighbor_y, boid[j].y)
                 push!(neighbor_xy,[boid[j].x, boid[j].y])
-                # increment counter
+
                 total += 1
 
                 # conditional for boids within perception_radius
@@ -162,14 +152,12 @@ function flock()
                 # 2. alignment rule ########################################rung
                 avg_v = sum(neighbor_v)/total
                 sf2 = (avg_v -v[i])/alignment_dial
-                rxy[i] +=clip_steering_force(sf2[1],sf2[2])
+                rxy[i] += clip_steering_force(sf2[1],sf2[2])
 
                 # 3. cohesion rule #########################################
                 avg_xy = sum(neighbor_xy)/total
                 sf3 = (avg_xy - [boid[i].x,boid[i].y] - v[i])/cohesion_dial
                 rxy[i] += clip_steering_force(sf3[1],sf3[2])
-
-
             end
         end
     end
@@ -191,8 +179,7 @@ function update(g::Game)
     flock()
     for i in 1:n
         border(i)
-        ax[i],ay[i] = rxy[i]
-        v[i] += [ax[i],ay[i]]
+        v[i] += rxy[i]
         v[i][1],v[i][2]= clip_speed(v[i][1]),clip_speed(v[i][2])
         boid[i].x += v[i][1]
         boid[i].y += v[i][2]
