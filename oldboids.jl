@@ -131,16 +131,18 @@ function flock()
             d = distance(boid[i], boid[j])
             if boid[i] !== boid[j] && d < perception_radius
                 # populate arrays for separation rule
-                if boid[i].x !== boid[j].x
-                    s_f_x = boid[i].x - boid[j].x
-                else
-                    s_f_x = 0
-                end
-                if boid[i].y !== boid[j].y
-                    s_f_y = boid[i].y - boid[j].y
-                else
-                    s_f_y = 0
-                end
+                # if boid[i].x !== boid[j].x
+                #     s_f_x = boid[i].x - boid[j].x
+                # else
+                #     s_f_x = 0
+                # end
+                # if boid[i].y !== boid[j].y
+                #     s_f_y = boid[i].y - boid[j].y
+                # else
+                #     s_f_y = 0
+                # end
+                s_f_x = boid[i].x - boid[j].x
+                s_f_y = boid[i].y - boid[j].y
                 push!(separation_force_x, s_f_x)
                 push!(separation_force_y, s_f_y)
                 # populate arrays for alignment rule
