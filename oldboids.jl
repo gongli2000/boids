@@ -169,11 +169,8 @@ function flock()
                     steering_force_y1 = Int(round(
                         (avg_y1 - vy[i]) / separation_dial
                     ))
+                    rx1[i],ry1[i] = clip_steering_force(steering_force_x1,steering_force_y1)
 
-                    steering_force_x1, steering_force_y1 =
-                      clip_steering_force(steering_force_x1,steering_force_y1)
-                    rx1[i] = steering_force_x1
-                    ry1[i] = steering_force_y1
 
                     # 2. alignment rule ########################################
                     avg_vx = Int(round(
@@ -190,10 +187,8 @@ function flock()
                         (avg_vy - vy[i]) / alignment_dial
                     ))
 
-                    steering_force_x2 ,steering_force_y2 =
-                       clip_steering_force(steering_force_x2,steering_force_y2)
-                    rx2[i] = steering_force_x2
-                    ry2[i] = steering_force_y2
+                    rx2[i],ry2[i]=clip_steering_force(steering_force_x2,steering_force_y2)
+
 
                     # 3. cohesion rule #########################################
                     avg_x3 = Int(round(
@@ -210,11 +205,7 @@ function flock()
                         (avg_y3 - boid[i].y - vy[i]) / cohesion_dial
                     ))
 
-                    steering_force_x3 ,steering_force_y3 =
-                       clip_steering_force(steering_force_x3,steering_force_y3)
-
-                    rx3[i] = steering_force_x3
-                    ry3[i] = steering_force_y3
+                    rx3[i],ry3[i]=clip_steering_force(steering_force_x3,steering_force_y3)
 
                 end
             end
